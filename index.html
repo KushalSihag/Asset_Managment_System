@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <title>Asset managment system</title>
+    <style>
+        body{
+            font-family: "Nunito Sans", sans-serif;
+            margin: 50px;
+        }
+        table {
+          width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            
+        }
+        .container{
+            position: relative;
+            display: flex;
+            
+            font-size: 30px;
+        }
+        .Inner_container_name{
+            padding-right: 20%;
+            
+        }
+        .IP_data{
+            
+            display: flex;
+        }
+        .IP_data_table{
+            width: 50%;
+        }
+        .IP_data_count{
+        padding-left: 20%;
+        display: flex;
+        
+        }
+        .box{
+         height: 10%;
+         width: 120%;
+         background-color: aqua;
+         padding: 2%;
+         border:1px solid black ;
+        }
+       /* .ring-chart {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #4CAF50 0% 0%, /* Placeholder, will be updated by JS */
+               /* #FF9800 0% 100% /* Placeholder, will be updated by JS */
+           /* );
+        }
+        
+        .ring-chart .center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }*/
+    </style>
+</head>
+
+<body>
+   
+    <div class="container">
+        <div class="Inner_container_name">
+            <h1>Fixed </h1>
+        </div>
+        <div class="Inner_container_description">
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Earum harum temporibus quasi porro reiciendis,
+                necessitatibus placeat consequuntur laborum quod explicabo inventore vitae
+                nulla error non beatae perspiciatis voluptate ipsum ad.</p>
+        </div>
+
+    </div>
+
+<div class="IP_data">
+  
+    <div  class="IP_data_table">
+    <table id="csvTable">
+        <thead>
+            <tr>
+                <th>IPAddress</th>
+                <th>Address</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be inserted here -->
+        </tbody>
+    </table>
+</div>
+<div  class="IP_data_count"    id="statusCounts">
+    <h1>total <span id="total"></span></h1>
+    <div class="box"><p>UP: <span id="yesCount">0</span></p></div>
+    <div class="box"><p>DOWN : <span id="noCount">0</span></p></div>
+</div>
+<!-- <div class="ring-chart" id="ringChart">
+    <div class="center"></div> 
+</div> -->
+</div>
+
+
+    <script>
+        // Function to update table data with real-time status
+        function updateTable() {
+            // Fetch updated data from the server
+            fetch('/update-status')
+                .then(response => response.json())
+                .then(data => {
+                    // Clear previous content
+                    const tableBody = document.querySelector('#csvTable tbody');
+                    tableBody.innerHTML = '';
+
+                    let yesCount = 0;
+                    let noCount = 0;
+
+                    // Populate the table with updated data
+                    data.forEach(row => {
+                        const tableRow = document.createElement('tr');
+                        const ipCell = document.createElement('td');
+                        const addressCell = document.createElement('td');
+                        const statusCell = document.createElement('td');
+
+                        ipCell.textContent = row.IPAddress;
+                        addressCell.textContent = row.Address;
+                        statusCell.textContent = row.Status;
+
+                        if (row.Status === 'YES') {
+                            yesCount++;
+                        } else {
+                            noCount++;
+                        }
+
+                        tableRow.appendChild(ipCell);
+                        tableRow.appendChild(addressCell);
+                        tableRow.appendChild(statusCell);
+                        tableBody.appendChild(tableRow);
+                    });
+                    //ring 
+                   // const up_percentage =  (yesCount/total)*100;
+                   // const Down_percentage = (noCount/total)*100;
+                    //console.log(`yesCount: ${up_percentage}%`);
+                   //console.log(`noCount: ${Down_Percentage}%`);
+    
+                    // Update the ring chart background dynamically
+                    //document.getElementById('ringChart').style.background = `conic-gradient(
+                     //   #4CAF50 0% ${up_percentage}%,
+                       // #FF9800 ${Down_percentage}% 100%
+                  //  )`;
+                    // Update the counts
+                    const total = noCount + yesCount;
+                    document.getElementById('yesCount').textContent = yesCount;
+                    document.getElementById('noCount').textContent = noCount;
+                    document.getElementById('total').textContent = total;
+                })
+                .catch(error => console.error('Error updating table:', error));
+        }
+
+        // Update the table every 30 seconds
+        setInterval(updateTable, 30000);
+
+        // Initial update
+        updateTable();
+    </script>
+
+</body>
+
+</html>
