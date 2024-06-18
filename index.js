@@ -5,6 +5,7 @@ const csv = require('csv-parser');
 const path = require('path');
 
 const app = express();
+let lastStatuses = {}; // To store last statuses
 
 // Middleware to serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -17,21 +18,32 @@ app.get('/update-status', async (req, res) => {
     fs.createReadStream('ip.csv')
         .pipe(csv())
         .on('data', (row) => {
-            ipAddresses.push(row.IPAddress);
+            ipAddresses.push({ IPAddress: row.IPAddress, Address: row.Address });
         })
         .on('end', async () => {
             console.log('CSV file successfully processed');
 
             try {
                 // Ping multiple IP addresses concurrently
-                const results = await Promise.all(ipAddresses.map(async ip => {
-                    const res = await ping.promise.probe(ip);
+                const results = await Promise.all(ipAddresses.map(async entry => {
+                    const res = await ping.promise.probe(entry.IPAddress);
+                    let status = res.alive ? 'YES' : 'NO';
+
+                    // Check if the IP was down last time and is still down
+                    if (!res.alive && lastStatuses[entry.IPAddress] === 'NO') {
+                        status = 'MAINTENANCE';
+                    }
+
+                    // Update the last status
+                    lastStatuses[entry.IPAddress] = res.alive ? 'YES' : 'NO';
+
                     return {
-                        IPAddress: ip,
-                        Status: res.alive ? 'YES' : 'NO'
+                        IPAddress: entry.IPAddress,
+                        Address: entry.Address,
+                        Status: status
                     };
                 }));
-                
+
                 // Send response with IP addresses and their statuses
                 res.json(results);
             } catch (error) {
